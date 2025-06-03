@@ -20,6 +20,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Redirect authenticated users to dashboard
     if (user && !authLoading) {
       navigate('/dashboard');
     }
@@ -46,13 +47,6 @@ const Auth = () => {
     setLoading(false);
     
     // Don't navigate immediately for sign up - user needs to confirm email
-  };
-
-  const handleGuest = () => {
-    // For now, redirect to sign up tab
-    setPseudo('');
-    setEmail('');
-    setPassword('');
   };
 
   const getRandomAvatar = () => {

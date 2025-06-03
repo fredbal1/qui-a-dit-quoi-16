@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGameData } from '@/hooks/useGameData';
 import { useRealtimeGame } from '@/hooks/useRealtimeGame';
+import { useAuth } from '@/hooks/useAuth';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import KiKaDiGame from '@/components/games/KiKaDiGame';
 import KiDiVraiGame from '@/components/games/KiDiVraiGame';
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button';
 const Game = () => {
   const navigate = useNavigate();
   const { gameId } = useParams();
+  const { user } = useAuth();
   const { game, players, currentPlayer, isLoading } = useGameData(gameId);
   useRealtimeGame(gameId);
 
@@ -23,12 +25,17 @@ const Game = () => {
 
   const games = ['kikadi', 'kidivrai', 'kideja', 'kidenous'];
 
-  // Redirect if not in game or game doesn't exist
+  // Redirect if not authenticated or not in game
   useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
     if (!isLoading && gameId && (!game || !currentPlayer)) {
       navigate('/dashboard');
     }
-  }, [game, currentPlayer, isLoading, gameId, navigate]);
+  }, [game, currentPlayer, isLoading, gameId, navigate, user]);
 
   // Initialize scores when players change
   useEffect(() => {
@@ -103,11 +110,12 @@ const Game = () => {
   }
 
   if (gamePhase === 'results') {
-    // Convert Record<string, number> to the expected format for GameResults
+    // Convert scores to the format expected by GameResults using actual player data
+    const playerScores = Object.entries(scores);
     const formattedScores = {
-      player1: Object.values(scores)[0] || 0,
-      player2: Object.values(scores)[1] || 0,
-      player3: Object.values(scores)[2] || 0
+      player1: playerScores[0]?.[1] || 0,
+      player2: playerScores[1]?.[1] || 0,
+      player3: playerScores[2]?.[1] || 0
     };
     
     return <GameResults scores={formattedScores} onRestart={() => navigate('/dashboard')} />;

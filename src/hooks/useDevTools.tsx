@@ -10,7 +10,7 @@ export function useDevTools() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const createTestGame = async (): Promise<string | undefined> => {
+  const createTestGame = async (): Promise<void> => {
     if (!user) {
       toast({
         title: "Erreur",
@@ -22,7 +22,7 @@ export function useDevTools() {
 
     setIsLoading(true);
     try {
-      // Create test game - code will be auto-generated
+      // Create test game with required code field
       const { data: game, error: gameError } = await supabase
         .from('games')
         .insert({
@@ -61,13 +61,16 @@ export function useDevTools() {
       ];
 
       for (const fakeUser of fakeUsers) {
-        // Create fake profile with valid ID
+        // Create fake profile with valid ID and all required fields
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
             id: fakeUser.id,
             pseudo: fakeUser.pseudo,
-            avatar_url: fakeUser.avatar_url
+            avatar_url: fakeUser.avatar_url,
+            xp: 0,
+            level: 1,
+            coins: 50
           });
 
         if (profileError) {
@@ -89,15 +92,12 @@ export function useDevTools() {
         title: "Partie de test créée !",
         description: `Code: ${game.code} avec 3 joueurs`,
       });
-
-      return game.code;
     } catch (error: any) {
       toast({
         title: "Erreur",
         description: error.message || "Impossible de créer la partie de test",
         variant: "destructive"
       });
-      return undefined;
     } finally {
       setIsLoading(false);
     }
@@ -144,13 +144,16 @@ export function useDevTools() {
     try {
       const fakeUserId = crypto.randomUUID();
 
-      // Create fake profile with valid ID
+      // Create fake profile with valid ID and all required fields
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: fakeUserId,
           pseudo: pseudo,
-          avatar_url: '🤖'
+          avatar_url: '🤖',
+          xp: 0,
+          level: 1,
+          coins: 50
         });
 
       if (profileError) throw profileError;
@@ -222,9 +225,7 @@ export function useDevTools() {
       name: 'Créer partie test complète',
       description: 'Créer une partie avec 3 joueurs (vous + 2 bots)',
       category: 'game',
-      action: async () => {
-        await createTestGame();
-      }
+      action: createTestGame
     },
     {
       id: 'add-fake-player',

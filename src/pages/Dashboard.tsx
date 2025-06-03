@@ -61,7 +61,16 @@ const Dashboard = () => {
   }
 
   if (!user || !profile) {
-    return null;
+    return (
+      <AnimatedBackground variant="dashboard">
+        <div className="flex items-center justify-center min-h-screen">
+          <GlassCard className="text-center">
+            <Loader2 className="w-8 h-8 text-white animate-spin mx-auto mb-4" />
+            <p className="text-white">Chargement du profil...</p>
+          </GlassCard>
+        </div>
+      </AnimatedBackground>
+    );
   }
 
   const xpToNextLevel = (profile.level + 1) * 100;

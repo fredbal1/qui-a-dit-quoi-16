@@ -41,11 +41,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile when authenticated
+          // Fetch user profile when authenticated - deferred to prevent deadlock
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -82,12 +85,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        // If profile doesn't exist, create it
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating...');
+          await createProfile(userId);
+        }
         return;
       }
 
+      console.log('Profile loaded:', data);
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const createProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          pseudo: `Joueur${Date.now()}`,
+          avatar_url: '🎮',
+          xp: 0,
+          level: 1,
+          coins: 100
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating profile:', error);
+        return;
+      }
+
+      console.log('Profile created:', data);
+      setProfile(data);
+    } catch (error) {
+      console.error('Error creating profile:', error);
     }
   };
 
