@@ -16,6 +16,9 @@ import MockAnalyzer from "./pages/MockAnalyzer";
 import SupabaseSchemaPlanner from "./pages/SupabaseSchemaPlanner";
 import BestPracticesAdvisor from "./pages/BestPracticesAdvisor";
 import ArchitectureVisualizer from "./pages/ArchitectureVisualizer";
+import ReplaceMockWizard from "./pages/ReplaceMockWizard";
+import DevSandbox from "./pages/DevSandbox";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -24,11 +27,31 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create" element={<CreateGame />} />
-          <Route path="/join" element={<JoinGame />} />
-          <Route path="/lobby" element={<Lobby />} />
-          <Route path="/game" element={<Game />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/create" element={
+            <ProtectedRoute>
+              <CreateGame />
+            </ProtectedRoute>
+          } />
+          <Route path="/join" element={
+            <ProtectedRoute>
+              <JoinGame />
+            </ProtectedRoute>
+          } />
+          <Route path="/lobby" element={
+            <ProtectedRoute>
+              <Lobby />
+            </ProtectedRoute>
+          } />
+          <Route path="/game" element={
+            <ProtectedRoute>
+              <Game />
+            </ProtectedRoute>
+          } />
           
           {/* Dev Tools Routes */}
           <Route path="/dev-tools" element={<DevTools />} />
@@ -36,6 +59,8 @@ function App() {
           <Route path="/dev-tools/supabase-schema-suggester" element={<SupabaseSchemaPlanner />} />
           <Route path="/dev-tools/best-practices-advisor" element={<BestPracticesAdvisor />} />
           <Route path="/dev-tools/architecture-visualizer" element={<ArchitectureVisualizer />} />
+          <Route path="/dev-tools/replace-mock-wizard" element={<ReplaceMockWizard />} />
+          <Route path="/dev-tools/sandbox" element={<DevSandbox />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>

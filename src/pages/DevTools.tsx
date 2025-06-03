@@ -11,7 +11,9 @@ import {
   ArrowLeft,
   Code,
   Settings,
-  Eye
+  Eye,
+  Wand,
+  Workflow
 } from 'lucide-react';
 
 const DevTools: React.FC = () => {
@@ -51,6 +53,24 @@ const DevTools: React.FC = () => {
       path: '/dev-tools/architecture-visualizer',
       status: 'ready',
       color: 'from-purple-500 to-pink-600'
+    },
+    {
+      id: 'mock-wizard',
+      title: 'Replace Mock Wizard',
+      description: 'Assistant de migration des mocks vers Supabase en quelques clics',
+      icon: Workflow,
+      path: '/dev-tools/replace-mock-wizard',
+      status: 'ready',
+      color: 'from-indigo-500 to-blue-600'
+    },
+    {
+      id: 'dev-sandbox',
+      title: 'Sandbox Développeur',
+      description: 'Environnement sécurisé pour tester les fonctionnalités KIADISA',
+      icon: Wand,
+      path: '/dev-tools/sandbox',
+      status: 'ready',
+      color: 'from-pink-500 to-red-400'
     }
   ];
 
@@ -85,7 +105,7 @@ const DevTools: React.FC = () => {
         </div>
 
         {/* Tools Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {tools.map((tool, index) => {
             const IconComponent = tool.icon;
             return (
@@ -163,7 +183,7 @@ const DevTools: React.FC = () => {
               <span className="text-white/60">→</span>
               <div className="flex items-center space-x-2 text-purple-300">
                 <div className="w-3 h-3 rounded-full bg-purple-400" />
-                <span>4. Visualiser l'architecture</span>
+                <span>4. Migrer les mocks</span>
               </div>
             </div>
           </div>
