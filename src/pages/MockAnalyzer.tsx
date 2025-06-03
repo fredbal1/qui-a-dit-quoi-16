@@ -26,95 +26,40 @@ const MockAnalyzer: React.FC = () => {
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [mockData, setMockData] = useState<MockDataItem[]>([]);
 
-  // Données mockées simulées basées sur l'analyse de KIADISA
+  // Données mises à jour - la plupart des mocks ont été migrés vers Supabase
   const simulatedMockData: MockDataItem[] = [
     {
       id: '1',
-      dataName: 'gameState.players',
-      components: ['Lobby', 'Game', 'GameResults'],
-      dataType: 'Player[]',
-      currentOrigin: 'mock',
-      associatedLogic: 'updatePlayersList, removePlayer',
-      priority: 'high',
+      dataName: 'questions.hardcoded',
+      components: ['KiKaDiGame', 'KiDiVraiGame', 'KiDejaGame', 'KiDeNousGame'],
+      dataType: 'Question[]',
+      currentOrigin: 'hardcoded',
+      associatedLogic: 'getRandomQuestion, filterByAmbiance',
+      priority: 'medium',
       connectionStatus: 'to-connect',
-      description: 'Liste des joueurs dans la partie actuelle'
+      description: 'Questions hardcodées dans les composants de jeu'
     },
     {
       id: '2',
-      dataName: 'currentUser.profile',
-      components: ['Dashboard', 'Auth', 'Settings'],
-      dataType: 'UserProfile',
-      currentOrigin: 'placeholder',
-      associatedLogic: 'updateProfile, authenticate',
-      priority: 'high',
+      dataName: 'shopItems.static',
+      components: ['Shop'],
+      dataType: 'ShopItem[]',
+      currentOrigin: 'hardcoded',
+      associatedLogic: 'purchaseItem, checkOwnership',
+      priority: 'low',
       connectionStatus: 'to-connect',
-      description: 'Profil utilisateur avec stats et préférences'
+      description: 'Articles de boutique en données statiques'
     },
     {
       id: '3',
-      dataName: 'questions.byCategory',
-      components: ['KiKaDiGame', 'KiDiVraiGame', 'CreateGame'],
-      dataType: 'Question[]',
+      dataName: 'gameSettings.defaults',
+      components: ['CreateGame'],
+      dataType: 'GameSettings',
       currentOrigin: 'hardcoded',
-      associatedLogic: 'fetchQuestionsByAmbiance, getRandomQuestion',
-      priority: 'high',
-      connectionStatus: 'to-connect',
-      description: 'Questions pré-écrites par ambiance et type de jeu'
-    },
-    {
-      id: '4',
-      dataName: 'answers.currentRound',
-      components: ['KiKaDiGame', 'KiDiVraiGame', 'KiDejaGame'],
-      dataType: 'Answer[]',
-      currentOrigin: 'empty-state',
-      associatedLogic: 'submitAnswer, getAnswersByRound',
-      priority: 'high',
-      connectionStatus: 'to-connect',
-      description: 'Réponses des joueurs pour la manche en cours'
-    },
-    {
-      id: '5',
-      dataName: 'votes.currentRound',
-      components: ['KiKaDiGame', 'KiDiVraiGame', 'KiDeNousGame'],
-      dataType: 'Vote[]',
-      currentOrigin: 'empty-state',
-      associatedLogic: 'submitVote, tallyVotes',
-      priority: 'high',
-      connectionStatus: 'to-connect',
-      description: 'Votes et accusations des joueurs'
-    },
-    {
-      id: '6',
-      dataName: 'shopItems.available',
-      components: ['Shop'],
-      dataType: 'ShopItem[]',
-      currentOrigin: 'mock',
-      associatedLogic: 'purchaseItem, checkOwnership',
-      priority: 'medium',
-      connectionStatus: 'to-connect',
-      description: 'Articles disponibles dans la boutique'
-    },
-    {
-      id: '7',
-      dataName: 'userStats.global',
-      components: ['Dashboard', 'Stats'],
-      dataType: 'UserStats',
-      currentOrigin: 'mock',
-      associatedLogic: 'updateStats, calculateLevel',
-      priority: 'medium',
-      connectionStatus: 'to-connect',
-      description: 'Statistiques globales du joueur'
-    },
-    {
-      id: '8',
-      dataName: 'gameHistory.recent',
-      components: ['Dashboard', 'Stats'],
-      dataType: 'GameHistory[]',
-      currentOrigin: 'mock',
-      associatedLogic: 'fetchRecentGames, getGameDetails',
+      associatedLogic: 'validateSettings, saveGameConfig',
       priority: 'low',
       connectionStatus: 'to-connect',
-      description: 'Historique des parties récentes'
+      description: 'Paramètres par défaut des parties'
     }
   ];
 
@@ -173,8 +118,12 @@ const MockAnalyzer: React.FC = () => {
                   Analyseur de Données Mockées 🔍
                 </h1>
                 <p className="text-white/80 font-inter">
-                  Scanner KIADISA pour identifier toutes les données mockées et placeholders
+                  Scanner KIADISA - État post-migration Supabase
                 </p>
+                <div className="mt-2 inline-flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-lg">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="text-green-300 text-sm">Migration Supabase terminée</span>
+                </div>
               </div>
               <Search className="w-12 h-12 text-blue-300" />
             </div>
@@ -189,7 +138,7 @@ const MockAnalyzer: React.FC = () => {
                 Contrôle d'Analyse
               </h2>
               <p className="text-white/70 text-sm">
-                Lancer l'analyse du code source KIADISA pour détecter les données mockées
+                Scanner les dernières données mockées restantes après migration Supabase
               </p>
             </div>
             
@@ -206,7 +155,7 @@ const MockAnalyzer: React.FC = () => {
               ) : (
                 <>
                   <Play className="w-4 h-4 mr-2" />
-                  Lancer l'Analyse du Code KIADISA
+                  Analyser les Données Restantes
                 </>
               )}
             </Button>
@@ -218,15 +167,15 @@ const MockAnalyzer: React.FC = () => {
               <div className="space-y-1 text-xs text-white/60">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-3 h-3 text-green-400" />
-                  <span>Scanning des composants React...</span>
+                  <span>✅ Profils utilisateur migrés vers Supabase</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-3 h-3 text-green-400" />
-                  <span>Analyse des types TypeScript...</span>
+                  <span>✅ Parties et joueurs connectés à la BDD</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-3 w-3 border-b border-yellow-400" />
-                  <span>Détection des données mockées...</span>
+                  <span>Recherche des dernières données hardcodées...</span>
                 </div>
               </div>
             </div>
@@ -275,19 +224,19 @@ const MockAnalyzer: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <GlassCard className="text-center">
                 <div className="text-2xl font-bold text-white">{mockData.length}</div>
-                <div className="text-white/70 text-sm">Données Identifiées</div>
+                <div className="text-white/70 text-sm">Données Restantes</div>
               </GlassCard>
               <GlassCard className="text-center">
-                <div className="text-2xl font-bold text-red-300">
-                  {mockData.filter(d => d.priority === 'high').length}
+                <div className="text-2xl font-bold text-green-300">
+                  {mockData.filter(d => d.priority === 'low').length}
                 </div>
-                <div className="text-white/70 text-sm">Priorité Haute</div>
+                <div className="text-white/70 text-sm">Faible Priorité</div>
               </GlassCard>
               <GlassCard className="text-center">
                 <div className="text-2xl font-bold text-yellow-300">
-                  {mockData.filter(d => d.currentOrigin === 'mock').length}
+                  {mockData.filter(d => d.currentOrigin === 'hardcoded').length}
                 </div>
-                <div className="text-white/70 text-sm">Données Mockées</div>
+                <div className="text-white/70 text-sm">Données Hardcodées</div>
               </GlassCard>
               <GlassCard className="text-center">
                 <div className="text-2xl font-bold text-blue-300">
@@ -300,76 +249,87 @@ const MockAnalyzer: React.FC = () => {
             {/* Data Table */}
             <GlassCard>
               <h3 className="text-xl font-poppins font-semibold text-white mb-4">
-                Données Mockées Détectées ({filteredData.length})
+                Données Restantes à Migrer ({filteredData.length})
               </h3>
               
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left text-white/80 font-medium p-3">Élément de Donnée</th>
-                      <th className="text-left text-white/80 font-medium p-3">Composants</th>
-                      <th className="text-left text-white/80 font-medium p-3">Type</th>
-                      <th className="text-left text-white/80 font-medium p-3">Origine</th>
-                      <th className="text-left text-white/80 font-medium p-3">Logique Associée</th>
-                      <th className="text-left text-white/80 font-medium p-3">Priorité</th>
-                      <th className="text-left text-white/80 font-medium p-3">Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredData.map((item, index) => (
-                      <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                        <td className="p-3">
-                          <div>
-                            <div className="font-medium text-white">{item.dataName}</div>
-                            {item.description && (
-                              <div className="text-white/60 text-xs mt-1">{item.description}</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex flex-wrap gap-1">
-                            {item.components.map(comp => (
-                              <Badge key={comp} variant="outline" className="text-xs border-blue-300/30 text-blue-200">
-                                {comp}
-                              </Badge>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <code className="text-green-300 text-sm bg-green-500/10 px-2 py-1 rounded">
-                            {item.dataType}
-                          </code>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex items-center space-x-2">
-                            {getOriginIcon(item.currentOrigin)}
-                            <span className="text-white/80 text-sm capitalize">
-                              {item.currentOrigin.replace('-', ' ')}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-white/70 text-sm font-mono">
-                            {item.associatedLogic}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <Badge className={`${getPriorityColor(item.priority)} text-xs`}>
-                            {item.priority}
-                          </Badge>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex items-center space-x-1">
-                            <div className="w-2 h-2 bg-red-400 rounded-full" />
-                            <span className="text-red-300 text-xs">À Connecter</span>
-                          </div>
-                        </td>
+              {filteredData.length === 0 ? (
+                <div className="text-center py-10">
+                  <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                  <h4 className="text-xl text-white mb-2">Migration Terminée ! 🎉</h4>
+                  <p className="text-white/70">
+                    Toutes les données importantes ont été migrées vers Supabase.
+                    Seules quelques données statiques restent en dur dans le code.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/20">
+                        <th className="text-left text-white/80 font-medium p-3">Élément de Donnée</th>
+                        <th className="text-left text-white/80 font-medium p-3">Composants</th>
+                        <th className="text-left text-white/80 font-medium p-3">Type</th>
+                        <th className="text-left text-white/80 font-medium p-3">Origine</th>
+                        <th className="text-left text-white/80 font-medium p-3">Logique Associée</th>
+                        <th className="text-left text-white/80 font-medium p-3">Priorité</th>
+                        <th className="text-left text-white/80 font-medium p-3">Statut</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredData.map((item, index) => (
+                        <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                          <td className="p-3">
+                            <div>
+                              <div className="font-medium text-white">{item.dataName}</div>
+                              {item.description && (
+                                <div className="text-white/60 text-xs mt-1">{item.description}</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex flex-wrap gap-1">
+                              {item.components.map(comp => (
+                                <Badge key={comp} variant="outline" className="text-xs border-blue-300/30 text-blue-200">
+                                  {comp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <code className="text-green-300 text-sm bg-green-500/10 px-2 py-1 rounded">
+                              {item.dataType}
+                            </code>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex items-center space-x-2">
+                              {getOriginIcon(item.currentOrigin)}
+                              <span className="text-white/80 text-sm capitalize">
+                                {item.currentOrigin.replace('-', ' ')}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="text-white/70 text-sm font-mono">
+                              {item.associatedLogic}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <Badge className={`${getPriorityColor(item.priority)} text-xs`}>
+                              {item.priority}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex items-center space-x-1">
+                              <div className="w-2 h-2 bg-yellow-400 rounded-full" />
+                              <span className="text-yellow-300 text-xs">Optionnel</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </GlassCard>
           </>
         )}

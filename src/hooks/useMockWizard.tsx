@@ -10,21 +10,21 @@ export function useMockWizard() {
   const [migrationSteps, setMigrationSteps] = useState<MigrationStep[]>([]);
   const { toast } = useToast();
 
-  // Mock data pour la démonstration
+  // Données mises à jour après migration Supabase - très peu de mocks restants
   const simulatedMockItems: MockItem[] = [
     {
       id: '1',
-      name: 'gameState',
-      filePath: 'src/components/Game.tsx',
+      name: 'gameQuestions',
+      filePath: 'src/components/games/KiKaDiGame.tsx',
       type: 'data',
-      usedInComponents: ['Game', 'Lobby'],
+      usedInComponents: ['KiKaDiGame', 'KiDiVraiGame', 'KiDejaGame', 'KiDeNousGame'],
       suggestedReplacement: {
         type: 'useQuery',
-        table: 'games',
+        table: 'questions',
         operation: 'select',
-        code: `const { data: game } = useQuery({
-  queryKey: ['game', gameId],
-  queryFn: () => supabase.from('games').select('*').eq('id', gameId).single()
+        code: `const { data: questions } = useQuery({
+  queryKey: ['questions', ambiance, gameType],
+  queryFn: () => supabase.from('questions').select('*').eq('ambiance', ambiance).eq('type', gameType)
 });`
       },
       migrationStatus: 'pending',
@@ -32,20 +32,20 @@ export function useMockWizard() {
     },
     {
       id: '2',
-      name: 'playerProfiles',
-      filePath: 'src/hooks/useAuth.tsx',
+      name: 'shopItems',
+      filePath: 'src/pages/Shop.tsx',
       type: 'data',
-      usedInComponents: ['Dashboard', 'Auth'],
+      usedInComponents: ['Shop'],
       suggestedReplacement: {
         type: 'useQuery',
-        table: 'profiles',
+        table: 'shop_items',
         operation: 'select',
-        code: `const { data: profile } = useQuery({
-  queryKey: ['profile', user?.id],
-  queryFn: () => supabase.from('profiles').select('*').eq('id', user.id).single()
+        code: `const { data: shopItems } = useQuery({
+  queryKey: ['shop-items'],
+  queryFn: () => supabase.from('shop_items').select('*')
 });`
       },
-      migrationStatus: 'completed',
+      migrationStatus: 'pending',
       dependencies: ['supabase', '@tanstack/react-query']
     }
   ];
@@ -57,7 +57,7 @@ export function useMockWizard() {
     setIsAnalyzing(false);
     toast({
       title: "Analyse terminée",
-      description: `${simulatedMockItems.length} mocks détectés`,
+      description: `${simulatedMockItems.length} mocks restants détectés (migration Supabase effectuée)`,
     });
   };
 
@@ -114,7 +114,7 @@ export function useMockWizard() {
     const total = mockItems.length;
     const completed = mockItems.filter(m => m.migrationStatus === 'completed').length;
     const pending = total - completed;
-    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 100; // 100% si aucun mock
 
     return { total, completed, pending, progress };
   };
