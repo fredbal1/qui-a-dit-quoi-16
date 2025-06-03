@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
@@ -13,12 +14,13 @@ import {
   Settings, 
   Lightbulb,
   LogOut,
-  Crown
+  Crown,
+  Loader2
 } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const { user, profile, signOut, loading } = useAuth();
   const [currentTip, setCurrentTip] = useState(0);
 
   const tips = [
@@ -30,12 +32,10 @@ const Dashboard = () => {
   ];
 
   useEffect(() => {
-    const userData = localStorage.getItem('kiadisa_user');
-    if (!userData) {
+    if (!loading && !user) {
       navigate('/auth');
       return;
     }
-    setUser(JSON.parse(userData));
 
     // Rotate tips every 5 seconds
     const interval = setInterval(() => {
@@ -43,19 +43,29 @@ const Dashboard = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, [navigate, user, loading]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('kiadisa_user');
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
-  if (!user) return null;
+  if (loading) {
+    return (
+      <AnimatedBackground variant="dashboard">
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>
+      </AnimatedBackground>
+    );
+  }
 
-  const mockXP = 1250;
-  const mockLevel = 8;
-  const xpToNextLevel = 1500;
-  const xpProgress = (mockXP / xpToNextLevel) * 100;
+  if (!user || !profile) {
+    return null;
+  }
+
+  const xpToNextLevel = (profile.level + 1) * 100;
+  const xpProgress = (profile.xp / xpToNextLevel) * 100;
 
   const actions = [
     {
@@ -97,7 +107,7 @@ const Dashboard = () => {
       icon: <Lightbulb className="w-8 h-8" />,
       title: "Dev Preview",
       description: "Fonctions en test",
-      action: () => {},
+      action: () => navigate('/dev-tools'),
       color: "from-yellow-500 to-amber-500"
     }
   ];
@@ -108,14 +118,14 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center space-x-4">
-            <div className="text-4xl animate-bounce">{user.avatar}</div>
+            <div className="text-4xl animate-bounce">{profile.avatar_url}</div>
             <div>
               <h1 className="text-2xl font-poppins font-bold text-white flex items-center">
-                {user.pseudo}
-                {mockLevel >= 10 && <Crown className="ml-2 w-5 h-5 text-yellow-300" />}
+                {profile.pseudo}
+                {profile.level >= 10 && <Crown className="ml-2 w-5 h-5 text-yellow-300" />}
               </h1>
               <p className="text-white/80 font-inter">
-                {user.isGuest ? 'Joueur Invité' : 'Maître du Bluff'} • Niveau {mockLevel}
+                {profile.title || 'Nouveau Joueur'} • Niveau {profile.level}
               </p>
             </div>
           </div>
@@ -133,9 +143,13 @@ const Dashboard = () => {
         <GlassCard className="mb-6 animate-slide-up">
           <div className="flex justify-between items-center mb-2">
             <span className="text-white font-inter font-medium">Expérience</span>
-            <span className="text-white/80 text-sm">{mockXP} / {xpToNextLevel} XP</span>
+            <span className="text-white/80 text-sm">{profile.xp} / {xpToNextLevel} XP</span>
           </div>
           <Progress value={xpProgress} className="h-3 bg-white/20" />
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-white/60 text-xs">Niveau {profile.level}</span>
+            <span className="text-white/60 text-xs">💰 {profile.coins} pièces</span>
+          </div>
         </GlassCard>
 
         {/* Actions Grid */}
