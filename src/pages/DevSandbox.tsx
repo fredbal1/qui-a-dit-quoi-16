@@ -16,12 +16,9 @@ const DevSandbox: React.FC = () => {
   const [gameCode, setGameCode] = useState('');
   const [playerName, setPlayerName] = useState('');
   
-  // Access limité à un email spécifique
-  const ALLOWED_EMAIL = 'dev@kiadisa.fr'; // Remplacer par votre email de développement
-  
-  // Rediriger si pas le bon email
-  if (!user || user.email !== ALLOWED_EMAIL) {
-    return <Navigate to="/" />;
+  // En mode développement, on permet l'accès sans restriction
+  if (!user) {
+    return <Navigate to="/auth" />;
   }
   
   return (
@@ -38,7 +35,7 @@ const DevSandbox: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-poppins font-bold text-white mb-2">
-                  Sandbox Développeur
+                  Sandbox Développeur 🧪
                 </h1>
                 <p className="text-white/80 font-inter">
                   Environnement de test pour le développement de KIADISA
@@ -64,16 +61,17 @@ const DevSandbox: React.FC = () => {
               Actions rapides
             </h2>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {devActions.map(action => (
                 <Button
                   key={action.id}
                   onClick={() => action.action()}
                   disabled={isLoading}
                   variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="border-white/20 text-white hover:bg-white/10 h-auto p-4 flex flex-col items-start"
                 >
-                  {action.name}
+                  <div className="font-medium">{action.name}</div>
+                  <div className="text-sm text-white/70 mt-1">{action.description}</div>
                 </Button>
               ))}
             </div>
@@ -141,36 +139,40 @@ const DevSandbox: React.FC = () => {
               </TabsList>
               
               <TabsContent value="phases">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                   {['intro', 'answer', 'vote', 'reveal', 'results'].map(phase => (
                     <Button
                       key={phase}
                       onClick={() => forceGamePhase('current', phase)}
                       disabled={isLoading}
-                      className={`border ${getPhaseColor(phase)}`}
+                      className={`border ${getPhaseColor(phase)} h-auto p-3 flex flex-col items-start`}
                       variant="outline"
                     >
-                      {getPhaseLabel(phase)}
+                      <div className="font-medium">{getPhaseLabel(phase)}</div>
+                      <div className="text-xs text-white/60 mt-1">
+                        Forcer le jeu à cette phase
+                      </div>
                     </Button>
                   ))}
                 </div>
               </TabsContent>
               
               <TabsContent value="games">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                   {[
-                    { id: 'kikadi', name: 'KiKaDi 🧠' },
-                    { id: 'kidivrai', name: 'KiDiVrai 😏' },
-                    { id: 'kideja', name: 'KiDéjà 🤭' },
-                    { id: 'kidenous', name: 'KiDeNous 😱' }
+                    { id: 'kikadi', name: 'KiKaDi 🧠', desc: 'Qui a dit ça ?' },
+                    { id: 'kidivrai', name: 'KiDiVrai 😏', desc: 'Vrai ou faux ?' },
+                    { id: 'kideja', name: 'KiDéjà 🤭', desc: 'Qui a déjà fait ça ?' },
+                    { id: 'kidenous', name: 'KiDeNous 😱', desc: 'Qui est le plus... ?' }
                   ].map(game => (
                     <Button
                       key={game.id}
                       onClick={() => console.log(`Lancer ${game.id}`)}
                       variant="outline"
-                      className="border-white/20"
+                      className="border-white/20 h-auto p-3 flex flex-col items-start"
                     >
-                      {game.name}
+                      <div className="font-medium">{game.name}</div>
+                      <div className="text-xs text-white/60 mt-1">{game.desc}</div>
                     </Button>
                   ))}
                 </div>
@@ -215,16 +217,22 @@ const DevSandbox: React.FC = () => {
           </GlassCard>
         </div>
         
-        {/* Visualisation */}
+        {/* Test Components */}
         <GlassCard className="mt-6">
           <h2 className="text-xl font-semibold text-white mb-4">
-            Visualisation
+            Tests de Composants
           </h2>
           
-          <div className="bg-slate-900/50 border border-white/10 p-4 rounded-md">
-            <div className="text-center text-white/60">
-              Prévisualisation en cours de développement
-            </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Button variant="outline" className="border-blue-500/30 text-blue-300">
+              Test Animations
+            </Button>
+            <Button variant="outline" className="border-purple-500/30 text-purple-300">
+              Test Emojis
+            </Button>
+            <Button variant="outline" className="border-green-500/30 text-green-300">
+              Test Real-time
+            </Button>
           </div>
         </GlassCard>
       </div>
