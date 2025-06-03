@@ -103,7 +103,14 @@ const Game = () => {
   }
 
   if (gamePhase === 'results') {
-    return <GameResults scores={scores} onRestart={() => navigate('/dashboard')} />;
+    // Convert Record<string, number> to the expected format for GameResults
+    const formattedScores = {
+      player1: Object.values(scores)[0] || 0,
+      player2: Object.values(scores)[1] || 0,
+      player3: Object.values(scores)[2] || 0
+    };
+    
+    return <GameResults scores={formattedScores} onRestart={() => navigate('/dashboard')} />;
   }
 
   return (

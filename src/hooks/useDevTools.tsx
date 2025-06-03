@@ -10,7 +10,7 @@ export function useDevTools() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const createTestGame = async () => {
+  const createTestGame = async (): Promise<string | undefined> => {
     if (!user) {
       toast({
         title: "Erreur",
@@ -22,7 +22,7 @@ export function useDevTools() {
 
     setIsLoading(true);
     try {
-      // Create test game
+      // Create test game - code will be auto-generated
       const { data: game, error: gameError } = await supabase
         .from('games')
         .insert({
@@ -30,7 +30,8 @@ export function useDevTools() {
           mode: 'classique',
           ambiance: 'safe',
           total_rounds: 3,
-          max_players: 4
+          max_players: 4,
+          code: '' // Will be replaced by trigger
         })
         .select()
         .single();
@@ -48,31 +49,38 @@ export function useDevTools() {
 
       if (playerError) throw playerError;
 
-      // Add 2 fake players
+      // Create fake users with valid UUIDs
+      const fakeUserIds = [
+        crypto.randomUUID(),
+        crypto.randomUUID()
+      ];
+
       const fakeUsers = [
-        { pseudo: 'TestBot1', avatar: '🤖' },
-        { pseudo: 'TestBot2', avatar: '🎯' }
+        { id: fakeUserIds[0], pseudo: 'TestBot1', avatar_url: '🤖' },
+        { id: fakeUserIds[1], pseudo: 'TestBot2', avatar_url: '🎯' }
       ];
 
       for (const fakeUser of fakeUsers) {
-        // Create fake profile
-        const { data: profile, error: profileError } = await supabase
+        // Create fake profile with valid ID
+        const { error: profileError } = await supabase
           .from('profiles')
           .insert({
+            id: fakeUser.id,
             pseudo: fakeUser.pseudo,
-            avatar_url: fakeUser.avatar
-          })
-          .select()
-          .single();
+            avatar_url: fakeUser.avatar_url
+          });
 
-        if (profileError) continue; // Skip if profile creation fails
+        if (profileError) {
+          console.log('Profile creation failed:', profileError);
+          continue;
+        }
 
         // Add as player
         await supabase
           .from('players')
           .insert({
             game_id: game.id,
-            user_id: profile.id,
+            user_id: fakeUser.id,
             is_host: false
           });
       }
@@ -89,12 +97,13 @@ export function useDevTools() {
         description: error.message || "Impossible de créer la partie de test",
         variant: "destructive"
       });
+      return undefined;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const joinGameForced = async (code: string) => {
+  const joinGameForced = async (code: string): Promise<void> => {
     if (!user) return;
 
     setIsLoading(true);
@@ -130,18 +139,19 @@ export function useDevTools() {
     }
   };
 
-  const addFakePlayer = async (gameId: string, pseudo: string) => {
+  const addFakePlayer = async (gameId: string, pseudo: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // Create fake profile
-      const { data: profile, error: profileError } = await supabase
+      const fakeUserId = crypto.randomUUID();
+
+      // Create fake profile with valid ID
+      const { error: profileError } = await supabase
         .from('profiles')
         .insert({
+          id: fakeUserId,
           pseudo: pseudo,
           avatar_url: '🤖'
-        })
-        .select()
-        .single();
+        });
 
       if (profileError) throw profileError;
 
@@ -150,7 +160,7 @@ export function useDevTools() {
         .from('players')
         .insert({
           game_id: gameId,
-          user_id: profile.id,
+          user_id: fakeUserId,
           is_host: false
         });
 
@@ -171,7 +181,7 @@ export function useDevTools() {
     }
   };
 
-  const forceGamePhase = async (gameId: string, phase: string) => {
+  const forceGamePhase = async (gameId: string, phase: string): Promise<void> => {
     setIsLoading(true);
     try {
       const updateData: any = {};
@@ -212,14 +222,18 @@ export function useDevTools() {
       name: 'Créer partie test complète',
       description: 'Créer une partie avec 3 joueurs (vous + 2 bots)',
       category: 'game',
-      action: createTestGame
+      action: async () => {
+        await createTestGame();
+      }
     },
     {
       id: 'add-fake-player',
       name: 'Ajouter joueur fictif',
       description: 'Ajouter un bot à la dernière partie créée',
       category: 'players',
-      action: () => addFakePlayer('test', 'TestBot_' + Date.now())
+      action: async () => {
+        await addFakePlayer('test', 'TestBot_' + Date.now());
+      }
     }
   ];
 
