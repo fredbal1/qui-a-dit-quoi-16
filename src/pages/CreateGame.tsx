@@ -169,9 +169,10 @@ const CreateGame = () => {
       console.log('✅ [CREATE GAME PAGE] Calling createGame with settings:', gameSettings);
 
       createGame(gameSettings, {
-        onSuccess: (game) => {
-          console.log('🎉 [CREATE GAME PAGE] Game created successfully, navigating to lobby:', game.id);
-          navigate(`/lobby/${game.id}`);
+        onSuccess: () => {
+          console.log('🎉 [CREATE GAME PAGE] Game created successfully, staying on create page temporarily');
+          // TEMPORAIRE : Pas de navigation car on n'a pas l'ID du jeu
+          // navigate(`/lobby/${game.id}`);
         },
         onError: (error) => {
           console.error('💥 [CREATE GAME PAGE] Game creation failed:', error);
