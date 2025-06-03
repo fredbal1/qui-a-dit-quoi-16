@@ -9,6 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      games: {
+        Row: {
+          ambiance: Database["public"]["Enums"]["game_ambiance"] | null
+          code: string
+          created_at: string | null
+          current_round: number | null
+          finished_at: string | null
+          host_id: string
+          id: string
+          max_players: number | null
+          mode: Database["public"]["Enums"]["game_mode"] | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["game_status"] | null
+          total_rounds: number | null
+        }
+        Insert: {
+          ambiance?: Database["public"]["Enums"]["game_ambiance"] | null
+          code: string
+          created_at?: string | null
+          current_round?: number | null
+          finished_at?: string | null
+          host_id: string
+          id?: string
+          max_players?: number | null
+          mode?: Database["public"]["Enums"]["game_mode"] | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["game_status"] | null
+          total_rounds?: number | null
+        }
+        Update: {
+          ambiance?: Database["public"]["Enums"]["game_ambiance"] | null
+          code?: string
+          created_at?: string | null
+          current_round?: number | null
+          finished_at?: string | null
+          host_id?: string
+          id?: string
+          max_players?: number | null
+          mode?: Database["public"]["Enums"]["game_mode"] | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["game_status"] | null
+          total_rounds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          game_id: string
+          id: string
+          is_host: boolean | null
+          is_ready: boolean | null
+          joined_at: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          is_host?: boolean | null
+          is_ready?: boolean | null
+          joined_at?: string | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          is_host?: boolean | null
+          is_ready?: boolean | null
+          joined_at?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -50,10 +148,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_game_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      game_ambiance: "safe" | "intime" | "nofilter"
+      game_mode: "classique" | "bluff" | "duel" | "couple"
+      game_status: "waiting" | "active" | "finished"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -168,6 +271,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      game_ambiance: ["safe", "intime", "nofilter"],
+      game_mode: ["classique", "bluff", "duel", "couple"],
+      game_status: ["waiting", "active", "finished"],
+    },
   },
 } as const

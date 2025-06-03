@@ -1,6 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGameManagement } from '@/hooks/useGameManagement';
+import { useGameByCode } from '@/hooks/useGameData';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
@@ -10,54 +11,44 @@ import { ArrowLeft, Users, Check, X } from 'lucide-react';
 
 const JoinGame = () => {
   const navigate = useNavigate();
+  const { joinGame, isJoining } = useGameManagement();
   const [gameCode, setGameCode] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState<'valid' | 'invalid' | null>(null);
+  
+  const { data: gameExists } = useGameByCode(gameCode);
 
   const handleCodeChange = (value: string) => {
     const formattedCode = value.toUpperCase().slice(0, 6);
     setGameCode(formattedCode);
-    setValidationResult(null);
   };
 
-  const validateCode = async () => {
-    if (gameCode.length !== 6) return;
-    
-    setIsValidating(true);
-    
-    // Simulate validation delay
-    setTimeout(() => {
-      // Mock validation - codes starting with 'A' are valid
-      const isValid = gameCode.startsWith('A') || gameCode === 'DEMO01';
-      setValidationResult(isValid ? 'valid' : 'invalid');
-      setIsValidating(false);
-      
-      if (isValid) {
-        setTimeout(() => {
-          navigate(`/lobby/${gameCode}`);
-        }, 1000);
-      }
-    }, 1500);
+  const handleJoinGame = () => {
+    if (gameCode.length === 6) {
+      joinGame(gameCode, {
+        onSuccess: (game) => {
+          navigate(`/lobby/${game.id}`);
+        }
+      });
+    }
   };
 
   const getValidationIcon = () => {
-    if (isValidating) {
+    if (isJoining) {
       return <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />;
     }
-    if (validationResult === 'valid') {
+    if (gameCode.length === 6 && gameExists) {
       return <Check className="w-5 h-5 text-green-400" />;
     }
-    if (validationResult === 'invalid') {
+    if (gameCode.length === 6 && !gameExists) {
       return <X className="w-5 h-5 text-red-400" />;
     }
     return null;
   };
 
   const getValidationMessage = () => {
-    if (validationResult === 'valid') {
-      return <span className="text-green-400">✅ Code valide ! Connexion...</span>;
+    if (gameCode.length === 6 && gameExists) {
+      return <span className="text-green-400">✅ Partie trouvée !</span>;
     }
-    if (validationResult === 'invalid') {
+    if (gameCode.length === 6 && !gameExists) {
       return <span className="text-red-400">❌ Code invalide</span>;
     }
     return null;
@@ -111,18 +102,18 @@ const JoinGame = () => {
                 </div>
               </div>
 
-              {validationResult && (
+              {gameCode.length === 6 && (
                 <div className="text-center text-sm font-inter animate-slide-up">
                   {getValidationMessage()}
                 </div>
               )}
 
               <Button
-                onClick={validateCode}
-                disabled={gameCode.length !== 6 || isValidating}
+                onClick={handleJoinGame}
+                disabled={gameCode.length !== 6 || !gameExists || isJoining}
                 className="w-full glass-button text-white border-white/30 hover:bg-white/20 font-poppins font-semibold"
               >
-                {isValidating ? 'Vérification...' : 'Rejoindre 🎮'}
+                {isJoining ? 'Connexion...' : 'Rejoindre 🎮'}
               </Button>
             </div>
           </GlassCard>

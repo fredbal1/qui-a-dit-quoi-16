@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useGameData } from '@/hooks/useGameData';
+import { useRealtimeGame } from '@/hooks/useRealtimeGame';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import KiKaDiGame from '@/components/games/KiKaDiGame';
 import KiDiVraiGame from '@/components/games/KiDiVraiGame';
@@ -13,45 +15,63 @@ import { Button } from '@/components/ui/button';
 const Game = () => {
   const navigate = useNavigate();
   const { gameId } = useParams();
-  const [currentRound, setCurrentRound] = useState(1);
-  const [totalRounds] = useState(5);
-  const [currentGame, setCurrentGame] = useState<string>('kikadi');
+  const { game, players, currentPlayer, isLoading } = useGameData(gameId);
+  useRealtimeGame(gameId);
+
   const [gamePhase, setGamePhase] = useState<'playing' | 'results'>('playing');
-  const [scores, setScores] = useState({
-    player1: 0,
-    player2: 0,
-    player3: 0
-  });
+  const [scores, setScores] = useState<Record<string, number>>({});
 
   const games = ['kikadi', 'kidivrai', 'kideja', 'kidenous'];
 
+  // Redirect if not in game or game doesn't exist
   useEffect(() => {
-    // Rotate games for each round
-    const gameIndex = (currentRound - 1) % games.length;
-    setCurrentGame(games[gameIndex]);
-  }, [currentRound]);
+    if (!isLoading && gameId && (!game || !currentPlayer)) {
+      navigate('/dashboard');
+    }
+  }, [game, currentPlayer, isLoading, gameId, navigate]);
 
-  const handleGameComplete = (roundScores: any) => {
+  // Initialize scores when players change
+  useEffect(() => {
+    if (players.length > 0) {
+      const initialScores: Record<string, number> = {};
+      players.forEach(player => {
+        initialScores[player.user_id] = player.score || 0;
+      });
+      setScores(initialScores);
+    }
+  }, [players]);
+
+  const handleGameComplete = (roundScores: Record<string, number>) => {
     // Update total scores
-    setScores(prev => ({
-      player1: prev.player1 + (roundScores.player1 || 0),
-      player2: prev.player2 + (roundScores.player2 || 0),
-      player3: prev.player3 + (roundScores.player3 || 0)
-    }));
+    setScores(prev => {
+      const newScores = { ...prev };
+      Object.keys(roundScores).forEach(playerId => {
+        newScores[playerId] = (newScores[playerId] || 0) + (roundScores[playerId] || 0);
+      });
+      return newScores;
+    });
 
     // Check if game is over
-    if (currentRound >= totalRounds) {
+    if (game && game.current_round >= game.total_rounds) {
       setGamePhase('results');
-    } else {
-      setCurrentRound(prev => prev + 1);
     }
   };
 
   const renderCurrentGame = () => {
+    if (!game) return null;
+
+    const gameIndex = (game.current_round - 1) % games.length;
+    const currentGame = games[gameIndex];
+
     const commonProps = {
       onComplete: handleGameComplete,
-      currentRound,
-      totalRounds
+      currentRound: game.current_round,
+      totalRounds: game.total_rounds,
+      players: players.map(p => ({
+        id: p.user_id,
+        pseudo: p.profiles?.pseudo || 'Joueur',
+        avatar: p.profiles?.avatar_url || '🎮'
+      }))
     };
 
     switch (currentGame) {
@@ -67,6 +87,20 @@ const Game = () => {
         return <KiKaDiGame {...commonProps} />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <AnimatedBackground variant="game">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full" />
+        </div>
+      </AnimatedBackground>
+    );
+  }
+
+  if (!game || !currentPlayer) {
+    return null;
+  }
 
   if (gamePhase === 'results') {
     return <GameResults scores={scores} onRestart={() => navigate('/dashboard')} />;
@@ -87,10 +121,10 @@ const Game = () => {
           </Button>
           <div className="text-center">
             <div className="text-white font-poppins font-semibold">
-              Manche {currentRound}/{totalRounds}
+              Manche {game.current_round}/{game.total_rounds}
             </div>
             <div className="text-white/80 text-sm">
-              Partie {gameId}
+              Partie {game.code}
             </div>
           </div>
           <div className="w-8" /> {/* Spacer for centering */}

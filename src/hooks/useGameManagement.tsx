@@ -1,0 +1,159 @@
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { useToast } from './use-toast';
+
+interface GameSettings {
+  mode: string;
+  ambiance: string;
+  miniGames: string[];
+  rounds: number;
+  maxPlayers: number;
+}
+
+export function useGameManagement() {
+  const { user, profile } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Create a new game
+  const createGameMutation = useMutation({
+    mutationFn: async (settings: GameSettings) => {
+      if (!user || !profile) throw new Error('User not authenticated');
+
+      // Create game
+      const { data: game, error: gameError } = await supabase
+        .from('games')
+        .insert({
+          host_id: user.id,
+          mode: settings.mode as any,
+          ambiance: settings.ambiance as any,
+          total_rounds: settings.rounds,
+          max_players: settings.maxPlayers
+        })
+        .select()
+        .single();
+
+      if (gameError) throw gameError;
+
+      // Add host as first player
+      const { error: playerError } = await supabase
+        .from('players')
+        .insert({
+          game_id: game.id,
+          user_id: user.id,
+          is_host: true
+        });
+
+      if (playerError) throw playerError;
+
+      return game;
+    },
+    onSuccess: (game) => {
+      toast({
+        title: "Partie créée !",
+        description: `Code: ${game.code}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de créer la partie",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Join a game by code
+  const joinGameMutation = useMutation({
+    mutationFn: async (gameCode: string) => {
+      if (!user || !profile) throw new Error('User not authenticated');
+
+      // Find game by code
+      const { data: game, error: gameError } = await supabase
+        .from('games')
+        .select('*')
+        .eq('code', gameCode.toUpperCase())
+        .eq('status', 'waiting')
+        .single();
+
+      if (gameError) throw new Error('Code de partie invalide');
+
+      // Check if user is already in the game
+      const { data: existingPlayer } = await supabase
+        .from('players')
+        .select('id')
+        .eq('game_id', game.id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingPlayer) {
+        return game; // Already in game
+      }
+
+      // Add player to game
+      const { error: playerError } = await supabase
+        .from('players')
+        .insert({
+          game_id: game.id,
+          user_id: user.id,
+          is_host: false
+        });
+
+      if (playerError) {
+        if (playerError.message.includes('violates')) {
+          throw new Error('La partie est pleine');
+        }
+        throw playerError;
+      }
+
+      return game;
+    },
+    onSuccess: (game) => {
+      toast({
+        title: "Partie rejointe !",
+        description: `Connecté à ${game.code}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.invalidateQueries({ queryKey: ['players'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de rejoindre la partie",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Start a game (host only)
+  const startGameMutation = useMutation({
+    mutationFn: async (gameId: string) => {
+      const { error } = await supabase
+        .from('games')
+        .update({ 
+          status: 'active',
+          started_at: new Date().toISOString()
+        })
+        .eq('id', gameId);
+
+      if (error) throw error;
+      return gameId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+    }
+  });
+
+  return {
+    createGame: createGameMutation.mutate,
+    joinGame: joinGameMutation.mutate,
+    startGame: startGameMutation.mutate,
+    isCreating: createGameMutation.isPending,
+    isJoining: joinGameMutation.isPending,
+    isStarting: startGameMutation.isPending
+  };
+}

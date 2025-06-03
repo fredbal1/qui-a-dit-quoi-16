@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGameManagement } from '@/hooks/useGameManagement';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import {
 
 const CreateGame = () => {
   const navigate = useNavigate();
+  const { createGame, isCreating } = useGameManagement();
   const [twoPlayersOnly, setTwoPlayersOnly] = useState(false);
   const [selectedMode, setSelectedMode] = useState<string>('');
   const [selectedAmbiance, setSelectedAmbiance] = useState<string>('');
@@ -129,9 +130,19 @@ const CreateGame = () => {
 
   const handleCreateGame = () => {
     if (canCreateGame) {
-      // Create game logic here
-      const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
-      navigate(`/lobby/${gameId}`);
+      const gameSettings = {
+        mode: selectedMode,
+        ambiance: selectedAmbiance,
+        miniGames: selectedMiniGames,
+        rounds: rounds[0],
+        maxPlayers: twoPlayersOnly ? 2 : 8
+      };
+
+      createGame(gameSettings, {
+        onSuccess: (game) => {
+          navigate(`/lobby/${game.id}`);
+        }
+      });
     }
   };
 
@@ -305,11 +316,20 @@ const CreateGame = () => {
         {/* Create Button */}
         <Button
           onClick={handleCreateGame}
-          disabled={!canCreateGame}
+          disabled={!canCreateGame || isCreating}
           className="w-full glass-button text-white border-white/30 hover:bg-white/20 text-lg py-6 font-poppins font-semibold"
         >
-          <Play className="mr-3 w-6 h-6" />
-          Lancer la partie 🚀
+          {isCreating ? (
+            <>
+              <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
+              Création en cours...
+            </>
+          ) : (
+            <>
+              <Play className="mr-3 w-6 h-6" />
+              Lancer la partie 🚀
+            </>
+          )}
         </Button>
       </div>
     </AnimatedBackground>
