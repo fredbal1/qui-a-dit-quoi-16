@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameManagement } from '@/hooks/useGameManagement';
+import { useAuth } from '@/hooks/useAuth';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
@@ -21,12 +23,23 @@ import {
 
 const CreateGame = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const { createGame, isCreating } = useGameManagement();
   const [twoPlayersOnly, setTwoPlayersOnly] = useState(false);
   const [selectedMode, setSelectedMode] = useState<string>('');
   const [selectedAmbiance, setSelectedAmbiance] = useState<string>('');
   const [selectedMiniGames, setSelectedMiniGames] = useState<string[]>([]);
   const [rounds, setRounds] = useState([5]);
+
+  // Debug: Log auth state on component mount
+  React.useEffect(() => {
+    console.log('🔐 [CREATE GAME PAGE] Auth state:', { 
+      user: !!user, 
+      userId: user?.id, 
+      profile: !!profile,
+      pseudo: profile?.pseudo 
+    });
+  }, [user, profile]);
 
   const modes = [
     {
@@ -129,6 +142,21 @@ const CreateGame = () => {
   const canCreateGame = selectedMode && selectedAmbiance && selectedMiniGames.length > 0;
 
   const handleCreateGame = () => {
+    console.log('🚀 [CREATE GAME PAGE] Create game button clicked');
+    console.log('📊 [CREATE GAME PAGE] Current form state:', {
+      selectedMode,
+      selectedAmbiance,
+      selectedMiniGames,
+      rounds: rounds[0],
+      twoPlayersOnly,
+      canCreateGame
+    });
+
+    if (!user || !profile) {
+      console.error('❌ [CREATE GAME PAGE] Cannot create game: user not authenticated');
+      return;
+    }
+
     if (canCreateGame) {
       const gameSettings = {
         mode: selectedMode,
@@ -138,11 +166,19 @@ const CreateGame = () => {
         maxPlayers: twoPlayersOnly ? 2 : 8
       };
 
+      console.log('✅ [CREATE GAME PAGE] Calling createGame with settings:', gameSettings);
+
       createGame(gameSettings, {
         onSuccess: (game) => {
+          console.log('🎉 [CREATE GAME PAGE] Game created successfully, navigating to lobby:', game.id);
           navigate(`/lobby/${game.id}`);
+        },
+        onError: (error) => {
+          console.error('💥 [CREATE GAME PAGE] Game creation failed:', error);
         }
       });
+    } else {
+      console.warn('⚠️ [CREATE GAME PAGE] Cannot create game: form incomplete');
     }
   };
 
@@ -163,6 +199,17 @@ const CreateGame = () => {
             Créer une partie
           </h1>
         </div>
+
+        {/* Debug Info */}
+        {process.env.NODE_ENV === 'development' && (
+          <GlassCard className="mb-6 bg-blue-500/20 border-blue-300/30">
+            <div className="text-blue-100 text-sm">
+              <div>🔐 Auth: {user ? '✅' : '❌'} | Profile: {profile ? '✅' : '❌'}</div>
+              <div>📊 Form: Mode={selectedMode} | Ambiance={selectedAmbiance} | Games={selectedMiniGames.length}</div>
+              <div>🎯 Can Create: {canCreateGame ? '✅' : '❌'} | Creating: {isCreating ? '⏳' : '✅'}</div>
+            </div>
+          </GlassCard>
+        )}
 
         {/* Two Players Switch */}
         <GlassCard className="mb-6 animate-slide-up">
