@@ -467,7 +467,7 @@ const ArchitectureVisualizer: React.FC = () => {
                                 <div key={key}>
                                   <span className="text-white/60 capitalize">{key}: </span>
                                   <span className="text-white/80">
-                                    {Array.isArray(value) ? value.join(', ') : value}
+                                    {Array.isArray(value) ? value.join(', ') : String(value)}
                                   </span>
                                 </div>
                               ))}
